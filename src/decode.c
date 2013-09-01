@@ -20,7 +20,7 @@ static SEXP readValue(char **b, char *end) {
     switch(*c) {
     case 'd':
 	c++;
-	do {
+	while (*c != 'e') {
 	    *b = c;
 	    SEXP key = PROTECT(readValue(b, end));
 	    if (TYPEOF(key) != STRSXP || LENGTH(key) != 1)
@@ -40,7 +40,7 @@ static SEXP readValue(char **b, char *end) {
 	    }
 	    c = *b;
 	    if (c >= end) Rf_error("Unterminated dictionary");
-	} while (*c != 'e');
+	}
 	c++;
 	*b = c;
 	if (res != R_NilValue) UNPROTECT(1);
@@ -67,7 +67,7 @@ static SEXP readValue(char **b, char *end) {
 	break;
     case 'l':
 	c++;
-	do {
+	while (*c != 'e') {
 	    *b = c;
 	    SEXP val = readValue(b, end);
 	    if (res == R_NilValue)
@@ -78,13 +78,14 @@ static SEXP readValue(char **b, char *end) {
 	    }
 	    c = *b;
 	    if (c >= end) Rf_error("Unterminated list");
-	} while (*c != 'e');
+	}
 	c++;
 	*b = c;
 	if (res != R_NilValue) UNPROTECT(1);
 	break;
     default:
-	if (*c < '0' || *c > '9') Rf_error("Invalid element (leading character is '%c')", *c);
+	if (*c < '0' || *c > '9')
+	    Rf_error("Invalid element (leading character is '%c')", *c);
 	int len = atoi(c);
 	while (*c >= '0' && *c <= '9') c++;
 	if (*c != ':')
