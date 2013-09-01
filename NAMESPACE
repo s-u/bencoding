@@ -1,0 +1,2 @@
+useDynLib(bencoding, benc_decode)
+export(readBenc)
