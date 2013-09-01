@@ -47,10 +47,21 @@ static SEXP readValue(char **b, char *end) {
 	break;
     case 'i':
 	c++;
-	res = ScalarInteger(atoi(c));
-	while (*c >= '0' && *c <= '9') c++;
+	/* use double for storage, becasue that's the largest R supports */
+	double val = 0.0, sign = 1.0;
+	if (*c == '-') {
+	    sign = -1.0;
+	    c++;
+	}
+	while (*c >= '0' && *c <= '9') {
+	    double v = (double) (*c - '0');
+	    val = val * 10.0 + v;
+	    c++;
+	}
+	val *= sign;
 	if (*c != 'e')
 	    Rf_error("Unterminated integer");
+	res = (val <= (double) NA_INTEGER || val > (double) INT_MAX) ? ScalarReal(val) : ScalarInteger(val);
 	c++;
 	*b = c;
 	break;
